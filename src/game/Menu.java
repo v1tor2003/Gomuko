@@ -1,4 +1,4 @@
-package classes;
+package src.game;
 
 import java.io.IOException;
 import java.util.Scanner;

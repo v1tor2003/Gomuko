@@ -1,13 +1,29 @@
-package classes;
+package src.game;
 
-import interfaces.Game;
+import src.interfaces.Game;
 
 public class Gomuko implements Game {
     private Player player1;
     private Player player2 = null;
+    private String table = "table as string";
 
     public Gomuko (Player owner) { 
         this.player1 = owner;
+    }
+
+    public void disconnect(Player player) {
+        if(player == player1)
+         player1 = null;
+        else player2 = null;
+    }
+
+    public Player getOwner(){
+        return this.player1;
+    }
+
+
+    public String getTable() {
+        return this.table;
     }
 
     @Override

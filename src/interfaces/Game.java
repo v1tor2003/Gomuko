@@ -1,6 +1,6 @@
-package interfaces;
+package src.interfaces;
 
-import classes.Player;
+import src.game.Player;
 
 public interface Game {
     void join (Player player);

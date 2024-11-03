@@ -1,19 +1,20 @@
 package src.lib;
 
+import java.io.Serializable;
 import java.util.Scanner;
 
 import utils.ConsoleCleaner;
 import utils.UnixConsoleCleaner;
 import utils.WindowsConsoleCleaner;
 
-public class Menu {
+public class Menu implements Serializable{
     private static final Scanner scanner = new Scanner(System.in);
-    private ConsoleCleaner cl;
+    private ConsoleCleaner cc;
     private String[] options;
     private static final char exitOption = 'q';
     
     public Menu () {
-        this.cl = Menu.getConsoleCleaner(System.getProperty("os.name"));
+        this.cc = Menu.getConsoleCleaner(System.getProperty("os.name"));
     }
 
     public void greet(String[] messages) {
@@ -39,6 +40,19 @@ public class Menu {
         this.clearScreen();
 
         return in;
+    }
+
+    public int getIntInput() {
+        while (true) {
+            try {
+                int num = this.getScanner().nextInt();
+                //this.getScanner().nextLine();
+                return num;
+            } catch (Exception e) {
+                System.out.println("Entrada invalida. Por favor, insira um numero.");
+                this.getScanner().nextLine(); 
+            }
+        }
     }
 
     public char getExitOption () {
@@ -69,7 +83,11 @@ public class Menu {
     }
 
     public void clearScreen() {
-        this.cl.clearScreen();
+        this.cc.clearScreen();
+    }
+
+    public void close(){
+        scanner.close();
     }
 
     private static ConsoleCleaner getConsoleCleaner(String os) {

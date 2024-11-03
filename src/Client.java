@@ -2,13 +2,14 @@ package src;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
 
 import src.game.Player;
-import src.lib.ClientImpl;
+import src.interfaces.GameServer;
 import src.lib.Menu;
 
 public class Client {
@@ -16,8 +17,8 @@ public class Client {
 
     public static void main (String ...args) throws RemoteException, NotBoundException, AlreadyBoundException {
         final String serverName = "RMIServer";
-        var client = new ClientImpl(serverName);
-        var player = new Player(client);
+        var server = getServerStub(serverName);
+        var player = new Player(server);
         var menu = new Menu();
 
         menu.greet(new String []{
@@ -26,7 +27,8 @@ public class Client {
         });
 
         player.setNickName(menu.getPlayerName());
-            
+        player.setMenu(menu);
+
         menu.setOptions(new String[]{
             "----\t\tGOMUKO\t\t----",
             "Pressione 'L' para listar todas as salas de jogo.",
@@ -40,14 +42,17 @@ public class Client {
         while (choice != menu.getExitOption()) {
             choice = menu.getChoice();  
             handleChoice(
-                menu, 
                 choice, 
                 player
             );
         }
     }
+
+    private static GameServer getServerStub(String serverName) throws AccessException, RemoteException, NotBoundException {
+        return (GameServer) java.rmi.registry.LocateRegistry.getRegistry().lookup(serverName);
+    }
     
-    private static void handleChoice(Menu menu, char choice, Player player) throws RemoteException, NotBoundException {
+    private static void handleChoice(char choice, Player player) throws RemoteException, NotBoundException {
         try {
             Map<String, Method> playerActions = player.getPlayerActions(); 
             Method method = playerActions.get(Character.toString(choice));
@@ -66,30 +71,16 @@ public class Client {
                 args = new Object[0];
             } else if (paramTypes.length == 1 && paramTypes[0] == int.class) {
                 // Expecting an int argument
-                args = new Object[]{askLobbyId(menu)};
+                System.out.println("Informe o id do jogo:");
+                args = new Object[]{player.getMenuRef().getIntInput() - 1};
             } else {
                 System.out.println("Metodo nao suportado ou argumentos incorretos.");
                 return;
             }
 
-            // Invoke the method
             method.invoke(player, args);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static int askLobbyId(Menu menu) {
-        System.out.print("Insira o id da sala de jogo: ");
-        while (true) {
-            try {
-                int lobbyId = menu.getScanner().nextInt();
-                menu.getScanner().nextLine();
-                return lobbyId;
-            } catch (Exception e) {
-                System.out.println("Entrada invalida. Por favor, insira um numero.");
-                menu.getScanner().nextLine(); 
-            }
         }
     }
 }

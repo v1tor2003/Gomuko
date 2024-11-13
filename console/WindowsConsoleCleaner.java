@@ -1,4 +1,4 @@
-package utils;
+package console;
 
 public class WindowsConsoleCleaner implements ConsoleCleaner {
     @Override

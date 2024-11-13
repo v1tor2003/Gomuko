@@ -3,9 +3,8 @@ package src.lib;
 import java.io.Serializable;
 import java.util.Scanner;
 
-import utils.ConsoleCleaner;
-import utils.UnixConsoleCleaner;
-import utils.WindowsConsoleCleaner;
+import console.ConsoleCleaner;
+import console.ConsoleCleanerFactory;
 
 public class Menu implements Serializable{
     private static final Scanner scanner = new Scanner(System.in);
@@ -14,7 +13,7 @@ public class Menu implements Serializable{
     private static final char exitOption = 'q';
     
     public Menu () {
-        this.cc = Menu.getConsoleCleaner(System.getProperty("os.name"));
+        this.cc = ConsoleCleanerFactory.getConsoleCleaner(System.getProperty("os.name"));
     }
 
     public void greet(String[] messages) {
@@ -26,12 +25,19 @@ public class Menu implements Serializable{
         System.out.println(String.join("\n", this.options));
     }
 
+    public void setOptions(String[] options){
+        this.options = options;
+    }
+
     public char getUserInput(){
-        return scanner
+        String input = scanner
                 .nextLine()
                 .toLowerCase()
-                .trim()
-                .charAt(0);
+                .trim();
+
+        if(!input.isEmpty()) return input.charAt(0);
+        
+        return getUserInput();
     }
 
     public char getChoice(){
@@ -59,19 +65,6 @@ public class Menu implements Serializable{
         return exitOption;
     }
 
-    public void setOptions(String[] options){
-        this.options = options;
-    }
-
-    public void exit(int code){
-        System.out.println("Saindo...");
-        System.exit(code);
-    }
-
-    public void exit(){
-        this.exit(0);
-    }
-
     public String getPlayerName() {
         return scanner
                 .nextLine()
@@ -90,7 +83,12 @@ public class Menu implements Serializable{
         scanner.close();
     }
 
-    private static ConsoleCleaner getConsoleCleaner(String os) {
-        return os.contains("Windows") ? new WindowsConsoleCleaner() : new UnixConsoleCleaner();
+    public void exit(int code){
+        System.out.println("Saindo...");
+        System.exit(code);
+    }
+
+    public void exit(){
+        this.exit(0);
     }
 }

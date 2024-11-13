@@ -16,12 +16,12 @@ public class Board {
         return this.board;
     }
 
-    public void setCell(int row, int col, char val) {
-        this.board[row][col] = val;
-    }
-
     public char getEmptySymbol() {
         return emptySymbol;
+    }
+
+    public void setCell(int row, int col, char val) {
+        this.board[row][col] = val;
     }
 
     private void fillBoard(char val) {
@@ -30,24 +30,24 @@ public class Board {
     }
 
     public boolean placeMove(int row, int col, char val) {
-        if(!IsValidMove(row, col)) return false;
+        if(!isValidMove(row, col)) return false;
         setCell(row, col, val);
         return true;
     }
 
-    private boolean IsValidMove(int row, int col) {
-        return IsInsideBoard(row, col) && IsCellEmpty(row, col);
+    private boolean isValidMove(int row, int col) {
+        return isInsideBoard(row, col) && isCellEmpty(row, col);
     }
 
-    public boolean IsInsideBoard(int row, int col) {
+    public boolean isInsideBoard(int row, int col) {
         return row >= 0 && row < board.length && col >= 0 && col < board.length;
     }
 
-    public boolean IsCurrSymbolPlayerSymbol(int row, int col, char playerSymbol) {
+    public boolean isCurrSymbolPlayerSymbol(int row, int col, char playerSymbol) {
         return board[row][col] == playerSymbol;
     }
 
-    public boolean IsCellEmpty(int row, int col) {
+    public boolean isCellEmpty(int row, int col) {
         return board[row][col] == emptySymbol;
     }
 
@@ -78,7 +78,6 @@ public class Board {
 
         return sb;
     }
-
 
     @Override
     public String toString() {

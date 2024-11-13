@@ -9,13 +9,19 @@ import java.util.List;
 import src.game.GameState;
 import src.game.Gomuko;
 import src.game.Player;
+import src.game.Turn;
+import src.interfaces.Game;
+import src.interfaces.GameLogger;
 import src.interfaces.GameServer;
+import src.lib.LoggerIpml;
 
 public class Server implements GameServer {
     private List<Gomuko> games;
+    private GameLogger gameLogger;
 
     public Server(String serverName, int port) throws RemoteException, AlreadyBoundException {
         this.games = new ArrayList<>();
+        this.gameLogger = new LoggerIpml();
         GameServer stub = (GameServer) UnicastRemoteObject.exportObject(this, port);
         java.rmi.registry.LocateRegistry.getRegistry().rebind(serverName, stub);
     }
@@ -25,60 +31,98 @@ public class Server implements GameServer {
     }
 
     public static void main(String... args) throws RemoteException, AlreadyBoundException {
-        new Server("RMIServer");
-        System.out.println("Sever is up and running");
+        final String serverName = "RMIServer";
+        final int port = 0;
+        new Server(serverName, 0);
+        System.out.println("Sever is up and running at rmi//:localhost/%s/%d".formatted(serverName, port));
     }
 
     private Gomuko getGameById(int gameId) {
         return this.games.get(gameId);
     }
 
-    private boolean IsValidGameId(int gameId) {
-        return gameId >= 0 || gameId < games.size();
+    private boolean isValidGameId(int gameId) {
+        return gameId >= 0 && gameId < games.size();
     }
 
     @Override
     public GameState getGameState(int gameId) throws RemoteException {
-        System.out.println(gameId + this.getGameById(gameId).getGameState().toString());
-        
-        if(!IsValidGameId(gameId)) return null;
+        if(!isValidGameId(gameId)) return null;
 
         return this.getGameById(gameId).getGameState();
     }
 
     @Override
-    public int createGame(Player owner) throws RemoteException {
-        this.games.add(new Gomuko(owner));
+    public GameState createGame(Player owner) throws RemoteException {
+        var newGame = new Gomuko(this.games.size(), owner);
+        this.games.add(newGame);
+        GameState newGameState = newGame.getGameState();
+        
+        String[] info = {
+            "New game created with id: %d for %s".formatted(this.games.size(), owner.getNick()),
+            "\t\t There are " + this.games.size() + " active games."
+        };
 
-        return this.games.size() - 1;
+        this.gameLogger.logInfo(info);
+
+        return newGameState;
+    }
+    
+    @Override
+    public GameState closeGame(int gameId) throws RemoteException {
+        if(!isValidGameId(gameId)) return null;
+        
+        Gomuko game = this.getGameById(gameId);
+        game.finish();
+        this.games.remove(game);
+
+        this.gameLogger.logInfo("(id: %d): game room has been closed".formatted(gameId));
+        return game.getGameState();
     }
 
     @Override
     public GameState connectGame(int gameId, Player participant) throws RemoteException {
-        if(!IsValidGameId(gameId)) return null;
+        if(!isValidGameId(gameId)) return null;
 
         Gomuko game = this.getGameById(gameId);
-        if(game.getParticipant() != null) return null; // check if game is full
+        if(game.isFull()) return null; 
+        
         game.join(participant);
         game.start();
+
+        String logInfo = "(id: %d): %s joined %s's game room".formatted(gameId, participant.getNick(), game.getOwner().getNick());
+        this.gameLogger.logInfo(logInfo);
 
         return game.getGameState();
     }
 
     @Override
     public GameState play(int gameId, Player player, int row, int col) throws RemoteException {
-        if(!IsValidGameId(gameId)) return null;
+        if(!isValidGameId(gameId)) return null;
+
         Gomuko game = this.getGameById(gameId);
-        game.processPlay(player, row, col);
-        
-        game.setTurn();
-        return game.getGameState();
+        GameState newGameState = game.processPlay(game.getGameState(), player, row, col);
+        game.setGameState(newGameState);
+
+        if(newGameState.going()) game.updateTurn();
+
+        GameState gameState = game.getGameState();
+
+        String[] info = {
+            "(id: %d): %s played".formatted(gameId, player.getNick()),
+            gameState.going() ? "\t\t Game is being played" : "\t\t Game is finished",
+            gameState.going() ? "\t\t Next player turn is the " + gameState.turn().toString() : "\t\t No next turn."
+        };
+
+        this.gameLogger.logInfo(info);
+
+        return gameState;
     }
 
     @Override
-    public boolean IsValidPlay(int gameId, int row, int col) throws RemoteException {
+    public boolean isValidPlay(int gameId, int row, int col) throws RemoteException {
         var board = this.getGameById(gameId).getGameBoard();
-        return board.IsInsideBoard(row, col) && board.IsCellEmpty(row, col);
+        return board.isInsideBoard(row, col) && board.isCellEmpty(row, col);
     }
 
     @Override
@@ -88,5 +132,10 @@ public class Server implements GameServer {
             sb.append(String.format("Id: %d, %s \n",  i + 1, this.games.get(i)));
    
         return sb.toString();
+    }
+
+    @Override
+    public int getGamesCount() throws RemoteException {
+        return this.games.size();
     }
 }

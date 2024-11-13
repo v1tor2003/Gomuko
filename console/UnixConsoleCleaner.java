@@ -1,4 +1,4 @@
-package utils;
+package console;
 
 public class UnixConsoleCleaner implements ConsoleCleaner{
     @Override
@@ -9,5 +9,4 @@ public class UnixConsoleCleaner implements ConsoleCleaner{
             e.printStackTrace();
         }
     }
-    
 }

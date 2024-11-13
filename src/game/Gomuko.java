@@ -1,63 +1,110 @@
 package src.game;
 
 import src.interfaces.Game;
+import src.lib.LoggerIpml;
 
 public class Gomuko implements Game {
     private static final int BOARD_SIZE = 15;
     private static final int WIN_COUNT = 5;
-    private Player player1; // X
-    private Player player2 = null; // 0
+    private Player owner; // OX
+    private Player participant = null; // O
     private GameState gameState;
     private Board gameBoard = null;
 
-    public Gomuko (Player owner) { 
-        this.player1 = owner;
-        this.gameState = new GameState(0, true, false,"");
+    public Gomuko (int gameId, Player owner) { 
+        this.owner = owner;
+        this.gameState = new GameState(
+            gameId,
+            Turn.NONE, 
+            true, 
+            false,
+            ""
+        );
     }
 
     public Player getOwner(){
-        return this.player1;
+        return this.owner;
     }
 
     public Player getParticipant() {
-        return this.player2;
+        return this.participant;
     }
 
     public GameState getGameState() {
         return this.gameState;
     }
-
-    public void start() {
-        this.gameBoard = new Board(BOARD_SIZE);
-        this.gameState = new GameState(1, false, true, this.gameBoard.toString());
-    }
-
-    private char getPlayerSymbol(Player player){
-        return player == player1 ? 'X' : 'O';
-    }
-
-    public void setTurn(){
-        int newTurn = this.gameState.turn() == 1 ? 2 : 1;
-        this.gameState = new GameState(newTurn, false, true, this.gameBoard.toString());
-    }
-
+    
     public Board getGameBoard() {
         return this.gameBoard;
     }
 
-    @Override
-    public void join(Player player) {
-        this.player2 = player;
+    private char getPlayerSymbol(){
+        return this.gameState.turn() == Turn.OWNER ? 'X' : 'O';
+    }
+
+    public void setGameState(GameState gameState){
+        this.gameState = gameState;
     }
 
     @Override
-    public void processPlay(Player player, int row, int col) {
-        char playerSymbol = getPlayerSymbol(player);
-        this.gameBoard.setCell(row, col, playerSymbol);
-        if(!checkWin(row, col, playerSymbol)) return;
+    public boolean isFull() {
+        return this.participant != null;
+    }
 
-        //should end game and shi
-        System.out.println(player + "ganhou");
+    @Override
+    public void start() {
+        this.gameBoard = new Board(BOARD_SIZE);
+        this.gameState = new GameState(
+            gameState.gameId(),
+            Turn.OWNER,
+            false, 
+            true, 
+            this.gameBoard.toString()
+        );
+    }
+
+    @Override
+    public void finish() {
+        this.gameState = new GameState(
+            this.gameState.gameId(), 
+            this.gameState.turn(), 
+            false, 
+            false, 
+            this.gameBoard.toString()
+        );
+    }
+
+    public void updateTurn(){
+        Turn newTurn = this.gameState.turn() == Turn.OWNER ? Turn.PARTICIPANT : Turn.OWNER;
+        this.gameState = new GameState(
+            gameState.gameId(),
+            newTurn, 
+            false, 
+            true, 
+            this.gameBoard.toString()
+        );
+    }
+
+    @Override
+    public void join(Player player) {
+        this.participant = player;
+    }
+
+    @Override
+    public GameState processPlay(GameState gameState, Player player, int row, int col) {
+        char playerSymbol = getPlayerSymbol();
+        this.gameBoard.setCell(row, col, playerSymbol);
+        if(!checkWin(row, col, playerSymbol)) return gameState;
+
+        new LoggerIpml().logInfo("(id: %d) %s wins the match".formatted(gameState.gameId() ,player.getNick()));
+
+        return new GameState(
+            gameState.gameId(),
+            gameState.turn(), 
+            false, 
+            false, 
+            gameState.board()
+        );
     }   
 
     public boolean checkWin(int row, int col, char playerSymbol){
@@ -86,7 +133,7 @@ public class Gomuko implements Game {
         int row = startRow + rowDelta;
         int col = startCol + colDelta;
 
-        while (this.gameBoard.IsInsideBoard(row, col) && this.gameBoard.IsCurrSymbolPlayerSymbol(row, col, playerSymbol)) {
+        while (this.gameBoard.isInsideBoard(row, col) && this.gameBoard.isCurrSymbolPlayerSymbol(row, col, playerSymbol)) {
             count++;
             row += rowDelta;
             col += colDelta;
@@ -98,6 +145,6 @@ public class Gomuko implements Game {
     public String toString() {
         String status = this.gameState.waiting() ? "Aguardando" : "Jogando";
         return "P1: %s, P2: %s, Status: %s"
-                .formatted(this.player1, this.player2, status);
+                .formatted(this.owner, this.participant, status);
     }
 }

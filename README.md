@@ -1,4 +1,4 @@
-# Gomuko RMI Java Program
+# Gomoku RMI Java Program
 
 This project demonstrates a Remote Method Invocation (RMI) application in Java, where a client-server architecture is implemented. The server hosts the game sarver that the players can, via the clients access remotely.
 
@@ -20,12 +20,12 @@ This project demonstrates a Remote Method Invocation (RMI) application in Java, 
 
 Clone the repo:
 ```bash
-git clone git@github.com:v1tor2003/Gomuko.git
+git clone git@github.com:v1tor2003/Gomoku.git
 ```
 
 And then cd into the dir:
 ```bash
-cd Gomuko
+cd Gomoku
 ```
 
 ## Compiling the Program

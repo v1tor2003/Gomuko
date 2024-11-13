@@ -23,7 +23,7 @@ public class Client {
         var menu = new Menu();
 
         menu.greet(new String []{
-            "----\tBem-Vindo ao GOMUKO\t----",  
+            "----\tBem-Vindo ao GOMOKU\t----",  
             "Para comecar, insira seu nome de jogador:"
         });
 
@@ -31,7 +31,7 @@ public class Client {
         player.setMenu(menu);
 
         menu.setOptions(new String[]{
-            "----\t\tGOMUKO\t\t----",
+            "----\t\tGOMOKU\t\t----",
             "Pressione 'L' para listar todas as salas de jogo.",
             "Pressione 'E' para entrar em uma sala de jogo.",
             "Pressione 'C' para criar uma nova sala de jogo.",

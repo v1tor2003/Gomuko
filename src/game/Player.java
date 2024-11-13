@@ -36,6 +36,10 @@ public class Player implements Serializable {
         return this.nick;
     }
 
+    private char getPlayerSymbol() {
+        return this.playerTurn == Turn.OWNER ? 'X' : 'O';
+    }
+
     private void waitAndPlay(GameState gameState) throws RemoteException, InterruptedException {
         int dotCounter = 0;
         while (gameState.waiting() || gameState.going()) {
@@ -45,7 +49,7 @@ public class Player implements Serializable {
             }
             
             dotCounter += 1;
-            this.printWaitingScreen(dotCounter, 1000);
+            this.printWaitingScreen(gameState.board(), dotCounter, 500);
             if(dotCounter == 3) dotCounter = 0;
             
             gameState = this.server.getGameState(gameState.gameId());
@@ -122,7 +126,8 @@ public class Player implements Serializable {
     }
 
     private int[] askCoordinates(String board, int gameId) {
-        System.out.println(board + "Sua vez! Informe as coodenadas de sua jogada. (l [1, 15], c [1, 15]):");
+        System.out.println(board + "Sua vez! (Jogando com %c).\n".formatted(getPlayerSymbol()) +
+        "Informe as coodenadas de sua jogada. (lin [1, 15], col [1, 15]):");
         return this.getPlayCoordinates(gameId);
     }
 
@@ -167,8 +172,8 @@ public class Player implements Serializable {
         return str += "Voce %s a partida!".formatted(res);
     }
 
-    private void printWaitingScreen(int dotRepeatAmount, long waitingTime) throws InterruptedException{
-        System.out.println("Aguarde sua vez" + ".".repeat(dotRepeatAmount));
+    private void printWaitingScreen(String board, int dotRepeatAmount, long waitingTime) throws InterruptedException{
+        System.out.println(board + "Aguarde sua vez (Jogando com %c)".formatted(getPlayerSymbol()) + ".".repeat(dotRepeatAmount));
         Thread.sleep(waitingTime); 
         this.menuRef.clearScreen();
     }

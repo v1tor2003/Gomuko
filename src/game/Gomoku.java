@@ -3,7 +3,7 @@ package src.game;
 import src.interfaces.Game;
 import src.lib.LoggerIpml;
 
-public class Gomuko implements Game {
+public class Gomoku implements Game {
     private static final int BOARD_SIZE = 15;
     private static final int WIN_COUNT = 5;
     private Player owner; // OX
@@ -11,7 +11,7 @@ public class Gomuko implements Game {
     private GameState gameState;
     private Board gameBoard = null;
 
-    public Gomuko (int gameId, Player owner) { 
+    public Gomoku (int gameId, Player owner) { 
         this.owner = owner;
         this.gameState = new GameState(
             gameId,

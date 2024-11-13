@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import src.game.GameState;
-import src.game.Gomuko;
+import src.game.Gomoku;
 import src.game.Player;
 import src.interfaces.GameLogger;
 import src.interfaces.GameServer;
 import src.lib.LoggerIpml;
 
 public class Server implements GameServer {
-    private List<Gomuko> games;
+    private List<Gomoku> games;
     private GameLogger gameLogger;
 
     public Server(String serverName, int port) throws RemoteException, AlreadyBoundException {
@@ -34,7 +34,7 @@ public class Server implements GameServer {
         System.out.println("Sever is up and running at rmi//:localhost/%s".formatted(serverName));
     }
 
-    private Gomuko getGameById(int gameId) {
+    private Gomoku getGameById(int gameId) {
         return this.games.get(gameId);
     }
 
@@ -51,7 +51,7 @@ public class Server implements GameServer {
 
     @Override
     public GameState createGame(Player owner) throws RemoteException {
-        var newGame = new Gomuko(this.games.size(), owner);
+        var newGame = new Gomoku(this.games.size(), owner);
         this.games.add(newGame);
         GameState newGameState = newGame.getGameState();
         
@@ -69,7 +69,7 @@ public class Server implements GameServer {
     public GameState closeGame(int gameId) throws RemoteException {
         if(!isValidGameId(gameId)) return null;
         
-        Gomuko game = this.getGameById(gameId);
+        Gomoku game = this.getGameById(gameId);
         game.finish();
         this.games.remove(game);
 
@@ -81,7 +81,7 @@ public class Server implements GameServer {
     public GameState connectGame(int gameId, Player participant) throws RemoteException {
         if(!isValidGameId(gameId)) return null;
 
-        Gomuko game = this.getGameById(gameId);
+        Gomoku game = this.getGameById(gameId);
         if(game.isFull()) return null; 
         
         game.join(participant);
@@ -97,7 +97,7 @@ public class Server implements GameServer {
     public GameState play(int gameId, Player player, int row, int col) throws RemoteException {
         if(!isValidGameId(gameId)) return null;
 
-        Gomuko game = this.getGameById(gameId);
+        Gomoku game = this.getGameById(gameId);
         GameState newGameState = game.processPlay(game.getGameState(), player, row, col);
         game.setGameState(newGameState);
 

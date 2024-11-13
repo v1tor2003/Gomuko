@@ -113,8 +113,6 @@ public class Player implements Serializable {
                 throw new Error("Erro ao fechar sala.");
 
         System.out.println("A sala de jogo foi fechada. Voltando ao menu inicial...");
-        
-        Thread.sleep(2000);
     }
 
     public void quitGame() {

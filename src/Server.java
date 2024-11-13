@@ -9,8 +9,6 @@ import java.util.List;
 import src.game.GameState;
 import src.game.Gomuko;
 import src.game.Player;
-import src.game.Turn;
-import src.interfaces.Game;
 import src.interfaces.GameLogger;
 import src.interfaces.GameServer;
 import src.lib.LoggerIpml;
@@ -32,9 +30,8 @@ public class Server implements GameServer {
 
     public static void main(String... args) throws RemoteException, AlreadyBoundException {
         final String serverName = "RMIServer";
-        final int port = 0;
-        new Server(serverName, 0);
-        System.out.println("Sever is up and running at rmi//:localhost/%s/%d".formatted(serverName, port));
+        new Server(serverName);
+        System.out.println("Sever is up and running at rmi//:localhost/%s".formatted(serverName));
     }
 
     private Gomuko getGameById(int gameId) {
